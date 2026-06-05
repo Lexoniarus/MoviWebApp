@@ -1,8 +1,70 @@
+import json
+import os
+from pathlib import Path
+from urllib.parse import urlencode
+from urllib.request import urlopen
+
 from flask import Flask, redirect, render_template, request, url_for
 
 from data_manager import DataManager
 from models import Movie, db
 
+
+OMDB_API_URL = "http://www.omdbapi.com/"
+
+
+def load_env_file():
+    env_path = Path(".env")
+
+    if not env_path.exists():
+        return
+
+    with env_path.open(encoding="utf-8") as env_file:
+        for line in env_file:
+            key_value = line.strip()
+
+            if not key_value or key_value.startswith("#"):
+                continue
+
+            key, separator, value = key_value.partition("=")
+
+            if separator:
+                os.environ.setdefault(key, value.strip("\"'"))
+
+
+def parse_year(year_text):
+    for index in range(len(year_text) - 3):
+        year = year_text[index:index + 4]
+
+        if year.isdigit():
+            return int(year)
+
+    return 0
+
+
+def fetch_movie_data(title):
+    api_key = os.environ.get("OMDB_API_KEY")
+
+    if not api_key:
+        return None
+
+    query = urlencode({"t": title, "apikey": api_key})
+
+    with urlopen(f"{OMDB_API_URL}?{query}", timeout=10) as response:
+        movie_data = json.loads(response.read().decode("utf-8"))
+
+    if movie_data.get("Response") == "False":
+        return None
+
+    return {
+        "name": movie_data.get("Title", title),
+        "director": movie_data.get("Director", "Unknown"),
+        "year": parse_year(movie_data.get("Year", "")),
+        "poster_url": movie_data.get("Poster", ""),
+    }
+
+
+load_env_file()
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///moviwebapp.db"
@@ -32,11 +94,16 @@ def list_movies(user_id):
 
 @app.route("/users/<int:user_id>/movies", methods=["POST"])
 def add_movie(user_id):
+    movie_data = fetch_movie_data(request.form["name"])
+
+    if movie_data is None:
+        return redirect(url_for("list_movies", user_id=user_id))
+
     movie = Movie(
-        name=request.form["name"],
-        director=request.form["director"],
-        year=int(request.form["year"]),
-        poster_url=request.form["poster_url"],
+        name=movie_data["name"],
+        director=movie_data["director"],
+        year=movie_data["year"],
+        poster_url=movie_data["poster_url"],
         user_id=user_id,
     )
     data_manager.add_movie(movie)

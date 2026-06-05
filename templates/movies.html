@@ -12,7 +12,10 @@
             <p>{{ movie.name }}</p>
             <p>{{ movie.director }}</p>
             <p>{{ movie.year }}</p>
-            <img src="{{ movie.poster_url }}" alt="{{ movie.name }} poster">
+
+            {% if movie.poster_url != "N/A" %}
+                <img src="{{ movie.poster_url }}" alt="{{ movie.name }} poster">
+            {% endif %}
 
             <form
                 action="{{ url_for(
@@ -49,15 +52,6 @@
 <form action="{{ url_for('add_movie', user_id=user_id) }}" method="post">
     <label for="name">Name</label>
     <input id="name" name="name" type="text" required>
-
-    <label for="director">Director</label>
-    <input id="director" name="director" type="text" required>
-
-    <label for="year">Year</label>
-    <input id="year" name="year" type="number" required>
-
-    <label for="poster-url">Poster URL</label>
-    <input id="poster-url" name="poster_url" type="url" required>
 
     <button type="submit">Add Movie</button>
 </form>
