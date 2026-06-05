@@ -2,6 +2,9 @@
 
 {% block content %}
 <h1>Movies</h1>
+<p>
+    <a class="back-link" href="{{ url_for('index') }}">Back to Users</a>
+</p>
 
 <ul>
     {% for movie in movies %}
