@@ -24,6 +24,44 @@ def create_user():
     return redirect(url_for("index"))
 
 
+@app.route("/users/<int:user_id>/movies", methods=["GET"])
+def list_movies(user_id):
+    movies = data_manager.get_movies(user_id)
+    return render_template("movies.html", movies=movies, user_id=user_id)
+
+
+@app.route("/users/<int:user_id>/movies", methods=["POST"])
+def add_movie(user_id):
+    movie = Movie(
+        name=request.form["name"],
+        director=request.form["director"],
+        year=int(request.form["year"]),
+        poster_url=request.form["poster_url"],
+        user_id=user_id,
+    )
+    data_manager.add_movie(movie)
+    return redirect(url_for("list_movies", user_id=user_id))
+
+
+@app.route(
+    "/users/<int:user_id>/movies/<int:movie_id>/update",
+    methods=["POST"],
+)
+def update_movie(user_id, movie_id):
+    new_title = request.form["new_title"]
+    data_manager.update_movie(movie_id, new_title)
+    return redirect(url_for("list_movies", user_id=user_id))
+
+
+@app.route(
+    "/users/<int:user_id>/movies/<int:movie_id>/delete",
+    methods=["POST"],
+)
+def delete_movie(user_id, movie_id):
+    data_manager.delete_movie(movie_id)
+    return redirect(url_for("list_movies", user_id=user_id))
+
+
 with app.app_context():
     db.create_all()
 
