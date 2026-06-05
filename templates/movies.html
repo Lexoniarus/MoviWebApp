@@ -6,50 +6,58 @@
     <a class="back-link" href="{{ url_for('index') }}">Back to Users</a>
 </p>
 
-<ul>
+<ul class="movie-list">
     {% for movie in movies %}
-        <li>
-            <p>{{ movie.name }}</p>
-            <p>{{ movie.director }}</p>
-            <p>{{ movie.year }}</p>
+        <li class="movie-card">
+            <div class="movie-details">
+                <h2>{{ movie.name }}</h2>
+                <p><strong>Director:</strong> {{ movie.director }}</p>
+                <p><strong>Year:</strong> {{ movie.year }}</p>
 
-            {% if movie.poster_url != "N/A" %}
-                <img src="{{ movie.poster_url }}" alt="{{ movie.name }} poster">
-            {% endif %}
+                {% if movie.poster_url != "N/A" %}
+                    <img src="{{ movie.poster_url }}" alt="{{ movie.name }} poster">
+                {% endif %}
+            </div>
 
-            <form
-                action="{{ url_for(
-                    'update_movie',
-                    user_id=user_id,
-                    movie_id=movie.id
-                ) }}"
-                method="post"
-            >
-                <label for="new-title-{{ movie.id }}">New title</label>
-                <input
-                    id="new-title-{{ movie.id }}"
-                    name="new_title"
-                    type="text"
-                    required
+            <div class="movie-actions">
+                <form
+                    class="inline-form"
+                    action="{{ url_for(
+                        'update_movie',
+                        user_id=user_id,
+                        movie_id=movie.id
+                    ) }}"
+                    method="post"
                 >
-                <button type="submit">Update Movie</button>
-            </form>
+                    <label for="new-title-{{ movie.id }}">New title</label>
+                    <input
+                        id="new-title-{{ movie.id }}"
+                        name="new_title"
+                        type="text"
+                        required
+                    >
+                    <button type="submit">Update Movie</button>
+                </form>
 
-            <form
-                action="{{ url_for(
-                    'delete_movie',
-                    user_id=user_id,
-                    movie_id=movie.id
-                ) }}"
-                method="post"
-            >
-                <button type="submit">Delete Movie</button>
-            </form>
+                <form
+                    class="inline-form"
+                    action="{{ url_for(
+                        'delete_movie',
+                        user_id=user_id,
+                        movie_id=movie.id
+                    ) }}"
+                    method="post"
+                >
+                    <button class="danger-button" type="submit">
+                        Delete Movie
+                    </button>
+                </form>
+            </div>
         </li>
     {% endfor %}
 </ul>
 
-<form action="{{ url_for('add_movie', user_id=user_id) }}" method="post">
+<form class="form-panel" action="{{ url_for('add_movie', user_id=user_id) }}" method="post">
     <label for="name">Name</label>
     <input id="name" name="name" type="text" required>
 
